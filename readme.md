@@ -1,8 +1,9 @@
 
 ## Dataset Condensation with Gradient Matching [[PDF]](https://arxiv.org/pdf/2006.05929.pdf)
 
+
 ### Method
-<p align="center"><img src='docs/method.png' width=750></p><br>
+<p align="center"><img src='docs/method.png' width=750></p>
 <center>Figure 1: Dataset Condensation (left) aims to generate a small set of synthetic images that can match the performance of a network trained on a large image dataset. Our method (right) realizes this goal by learning a synthetic set such that a deep network trained on it and the large set produces similar gradients w.r.t. the parameters. The synthetic data can later be used to train a network from scratch in a fraction of the original computational load. CE denotes Cross-Entropy. </center><br>
 
 ### Setup
@@ -61,11 +62,11 @@ python main.py  --dataset MNIST  --model ConvNet  --ipc 1  --dis_metric mse
 ```
 
 ### Visualization
-<p align="center"><img src='docs/1ipc.png' width=500></p><br>
+<p align="center"><img src='docs/1ipc.png' width=500></p>
 <center>Figure 2: Visualization of condensed 1 image/class with ConvNet for MNIST, FashionMNIST, SVHN and CIFAR10. Average testing accuracies on randomly initialized ConvNets are 91.7%, 70.5%, 31.2% and 28.3% respectively. </center><br>
 
 
-<p align="center"><img src='docs/10ipc.png' width=800></p><br>
+<p align="center"><img src='docs/10ipc.png' width=800></p>
 <center>Figure 3: Visualization of condensed 10 images/class with ConvNet for MNIST, FashionMNIST, SVHN and CIFAR10. Average testing accuracies on randomly initialized ConvNets are 97.4%, 82.3%, 76.1% and 44.9% respectively. </center><br>
 
 
