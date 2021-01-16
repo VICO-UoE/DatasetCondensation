@@ -2,7 +2,7 @@
 ## Dataset Condensation with Gradient Matching [[PDF]](https://arxiv.org/pdf/2006.05929.pdf)
 
 ### Method
-<p align="center"><img src='docs/method.png' width=600></p><br>
+<p align="center"><img src='docs/method.png' width=750></p><br>
 <center>Figure 1: Dataset Condensation (left) aims to generate a small set of synthetic images that can match the performance of a network trained on a large image dataset. Our method (right) realizes this goal by learning a synthetic set such that a deep network trained on it and the large set produces similar gradients w.r.t. the parameters. The synthetic data can later be used to train a network from scratch in a fraction of the original computational load. CE denotes Cross-Entropy. </center><br>
 
 ### Setup
