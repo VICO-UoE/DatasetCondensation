@@ -23,18 +23,17 @@ def main():
     parser.add_argument('--lr_net', type=float, default=0.01, help='learning rate for updating network parameters')
     parser.add_argument('--batch_real', type=int, default=256, help='batch size for real data')
     parser.add_argument('--batch_train', type=int, default=256, help='batch size for training networks')
-    parser.add_argument('--init', type=str, default='real', help='initialization of synthetic data, noise/real: initialize from random noise or real images. We recommend `real`.')
-    parser.add_argument('--clip_syn', type=str, default='True', help='clip the pixel values of synthetic data')
+    parser.add_argument('--init', type=str, default='noise', help='initialization of synthetic data, noise/real: initialize from random noise or real images. The two initializations will get similar performances.')
+    parser.add_argument('--clip_syn', type=str, default='False', help='clip the pixel values of synthetic data')
     parser.add_argument('--data_path', type=str, default='data', help='dataset path')
     parser.add_argument('--save_path', type=str, default='result', help='path to save results')
     parser.add_argument('--dis_metric', type=str, default='ours', help='distance metric')
-    # The experimental results in the paper were obtained with --init 'random' and --clip_syn 'False'.
+    # The experimental results in the paper were obtained with --init noise and --clip_syn False.
     # For speeding up, we can decrease the Iteration and epoch_eval_train, which will not cause significant performance decrease.
-    # The generated images would be slightly different from the visualization results in the paper, because of the pixel normalization and initialization.
 
 
     args = parser.parse_args()
-    args.clip_syn = True if args.clip_syn == 'True' or args.clip_syn else False
+    args.clip_syn = True if args.clip_syn == 'True' else False
     args.outer_loop, args.inner_loop = get_loops(args.ipc)
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print('Hyper-parameters: \n', args.__dict__)
@@ -45,11 +44,11 @@ def main():
     if not os.path.exists(args.save_path):
         os.mkdir(args.save_path)
 
-
-    eval_it_pool = np.arange(0, args.Iteration+1, 100).tolist() # the list of iterations when we evaluate models.
+    eval_it_pool = np.arange(0, args.Iteration+1, 100).tolist() if args.eval_mode == 'S' else [args.Iteration] # The list of iterations when we evaluate models and record results.
     channel, im_size, num_classes, class_names, mean, std, dst_train, dst_test, testloader = get_dataset(args.dataset, args.data_path)
     model_eval_pool = get_eval_pool(args.eval_mode, args.model, args.model)
     print('Evaluation model pool: ', model_eval_pool)
+
 
     accs_all_exps = dict() # record performances of all experiments
     for key in model_eval_pool:
@@ -129,8 +128,13 @@ def main():
 
                 ''' visualize and save '''
                 save_name = os.path.join(args.save_path, 'vis_%s_%s_%dipc_exp%d_iter%d.png'%(args.dataset, args.model, args.ipc, exp, it))
-                save_image(copy.deepcopy(image_syn.detach().cpu()), save_name, nrow=args.ipc, normalize=True, range=(-2,2)) # assume mean = 0, std = 1. adjust it for better view
-
+                image_syn_vis = copy.deepcopy(image_syn.detach().cpu())
+                for ch in range(channel):
+                    image_syn_vis[:, ch] = image_syn_vis[:, ch]  * std[ch] + mean[ch]
+                image_syn_vis[image_syn_vis<0] = 0.0
+                image_syn_vis[image_syn_vis>1] = 1.0
+                save_image(image_syn_vis, save_name, nrow=args.ipc)
+                # The generated images would be slightly different from the visualization results in the paper, because of the clip and normalization of pixels.
 
             ''' Train synthetic data '''
             net = get_network(args.model, channel, num_classes, im_size).to(args.device) # get a random model
@@ -188,10 +192,9 @@ def main():
                 if args.clip_syn: # clip synthetic data
                     for ch in range(channel):
                         image_syn_ch = image_syn[:, ch]
-                        image_syn_ch.data -= torch.mean(image_syn_ch).item()
-                        threshold = 4*torch.std(image_syn_ch).item()
-                        image_syn_ch[image_syn_ch>threshold].data[:] = threshold
-                        image_syn_ch[image_syn_ch<-threshold].data[:] = -threshold
+                        clip_min, clip_max = (0.0 - mean[ch])/std[ch], (1.0 - mean[ch])/std[ch]
+                        image_syn_ch[image_syn_ch>clip_max].data[:] = clip_max
+                        image_syn_ch[image_syn_ch<clip_min].data[:] = clip_min
 
 
                 if ol == args.outer_loop - 1:

@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 from torchvision import datasets, transforms
 from scipy.ndimage.interpolation import rotate as scipyrotate
-from networks import MLP, ConvNet, LeNet, AlexNet, AlexCifarNet, VGG11BN, VGG11, ResNet18, ResNet18BN_AP
+from networks import MLP, ConvNet, LeNet, AlexNet, VGG11BN, VGG11, ResNet18, ResNet18BN_AP
 
 
 def get_dataset(dataset, data_path):
@@ -93,8 +93,6 @@ def get_network(model, channel, num_classes, im_size=(32, 32)):
         net = LeNet(channel=channel, num_classes=num_classes)
     elif model == 'AlexNet':
         net = AlexNet(channel=channel, num_classes=num_classes)
-    elif model == 'AlexCifarNet':
-        net = AlexCifarNet(channel=channel, num_classes=num_classes)
     elif model == 'VGG11':
         net = VGG11( channel=channel, num_classes=num_classes)
     elif model == 'VGG11BN':
@@ -306,7 +304,7 @@ def evaluate_synset(it_eval, net, images_train, labels_train, testloader, lr, ba
 
     time_train = time.time() - start
     loss_test, acc_test = epoch('test', testloader, net, optimizer, criterion, param_augment, device)
-    print('%s Evaluate_%02d: iter = %04d train time = %d s train loss = %.6f train acc = %.4f, test acc = %.4f' % (get_time(), it_eval, Epoch, int(time_train), loss_train, acc_train, acc_test))
+    print('%s Evaluate_%02d: epoch = %04d train time = %d s train loss = %.6f train acc = %.4f, test acc = %.4f' % (get_time(), it_eval, Epoch, int(time_train), loss_train, acc_train, acc_test))
 
     return net, acc_train, acc_test
 
@@ -391,9 +389,6 @@ def get_daparam(dataset, model, model_eval, ipc):
 
     if model_eval in ['ConvNetBN']: # Data augmentation makes model training with Batch Norm layer easier.
         param_augment['strategy'] = 'crop_noise'
-
-    if (dataset == 'CIFAR10' or dataset == 'Cifar10') and model_eval == 'AlexCifarNet' and ipc == 10:
-        param_augment['strategy'] = 'crop_scale_rotate'
 
     return param_augment
 
