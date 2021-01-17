@@ -19,14 +19,7 @@ python main.py  --dataset CIFAR10  --model ConvNet  --ipc 10
 ### Cross-architecture experiments - Table 2
 ```
 python main.py  --dataset MNIST  --model ConvNet  --ipc 1  --eval_mode M
-# --model: MLP, LeNet, ConvNet, AlexNet, VGG11BN, ResNet18BN_AP
-```
-
-### Comparison to Dataset Distillation with the same architectures - Table 3
-```
-python main.py  --dataset MNIST  --model LeNet  --ipc 10
-python main.py  --dataset CIFAR10  --model AlexCifarNet  --ipc 10
-# --ipc (images/class): 1, 10
+# --model: MLP, LeNet, ConvNet, AlexNet, VGG11BN, ResNet18BN_AP, Note: set --lr_img 0.01 when --model MLP
 ```
 
 ### Ablation study on different modules - Table T2, T3, T4, T5, T6, T7
