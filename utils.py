@@ -218,7 +218,7 @@ def match_loss(gw_syn, gw_real, args):
         dis = 1 - torch.sum(gw_real_vec * gw_syn_vec, dim=-1) / (torch.norm(gw_real_vec, dim=-1) * torch.norm(gw_syn_vec, dim=-1) + 0.000001)
 
     else:
-        exit('ZH error: unknown distance function')
+        exit('DC error: unknown distance function')
 
     return dis
 
