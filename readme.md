@@ -1,5 +1,5 @@
 
-## Dataset Condensation with Gradient Matching [[PDF]](https://arxiv.org/pdf/2006.05929.pdf)
+## Dataset Condensation with Gradient Matching [[PDF]](https://openreview.net/pdf?id=mSAKhLYLSsl)
 
 
 ### Method
