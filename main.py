@@ -16,7 +16,7 @@ def main():
     parser.add_argument('--ipc', type=int, default=1, help='image(s) per class')
     parser.add_argument('--eval_mode', type=str, default='S', help='eval_mode') # S: the same to training model, M: multi architectures,  W: net width, D: net depth, A: activation function, P: pooling layer, N: normalization layer,
     parser.add_argument('--num_exp', type=int, default=5, help='the number of experiments')
-    parser.add_argument('--num_eval', type=int, default=10, help='the number of evaluating randomly initialized models')
+    parser.add_argument('--num_eval', type=int, default=20, help='the number of evaluating randomly initialized models')
     parser.add_argument('--epoch_eval_train', type=int, default=300, help='epochs to train a model with synthetic data')
     parser.add_argument('--Iteration', type=int, default=1000, help='training iterations')
     parser.add_argument('--lr_img', type=float, default=0.1, help='learning rate for updating synthetic images')
@@ -36,7 +36,6 @@ def main():
     args.clip_syn = True if args.clip_syn == 'True' else False
     args.outer_loop, args.inner_loop = get_loops(args.ipc)
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    print('Hyper-parameters: \n', args.__dict__)
 
     if not os.path.exists(args.data_path):
         os.mkdir(args.data_path)
@@ -44,10 +43,9 @@ def main():
     if not os.path.exists(args.save_path):
         os.mkdir(args.save_path)
 
-    eval_it_pool = np.arange(0, args.Iteration+1, 100).tolist() if args.eval_mode == 'S' else [args.Iteration] # The list of iterations when we evaluate models and record results.
+    eval_it_pool = np.arange(0, args.Iteration+1, 500).tolist() if args.eval_mode == 'S' else [args.Iteration] # The list of iterations when we evaluate models and record results.
     channel, im_size, num_classes, class_names, mean, std, dst_train, dst_test, testloader = get_dataset(args.dataset, args.data_path)
     model_eval_pool = get_eval_pool(args.eval_mode, args.model, args.model)
-    print('Evaluation model pool: ', model_eval_pool)
 
 
     accs_all_exps = dict() # record performances of all experiments
@@ -59,7 +57,8 @@ def main():
 
     for exp in range(args.num_exp):
         print('\n================== Exp %d ==================\n '%exp)
-
+        print('Hyper-parameters: \n', args.__dict__)
+        print('Evaluation model pool: ', model_eval_pool)
 
         ''' organize the real dataset '''
         images_all = []

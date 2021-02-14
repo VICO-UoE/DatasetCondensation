@@ -283,17 +283,18 @@ def epoch(mode, dataloader, net, optimizer, criterion, param_augment, device):
 
 
 
-def evaluate_synset(it_eval, net, images_train, labels_train, testloader, lr, batchsize_train, param_augment, device, Epoch = 600):
+def evaluate_synset(it_eval, net, images_train, labels_train, testloader, learningrate, batchsize_train, param_augment, device, Epoch = 600):
     net = net.to(device)
     images_train = images_train.to(device)
     labels_train = labels_train.to(device)
+    lr = float(learningrate) # avoid changing the args object
 
     lr_schedule = [Epoch//2+1]
     optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
     criterion = nn.CrossEntropyLoss().to(device)
 
     dst_train = TensorDataset(images_train, labels_train)
-    trainloader = torch.utils.data.DataLoader(dst_train, batch_size=256, shuffle=True, num_workers=0)
+    trainloader = torch.utils.data.DataLoader(dst_train, batch_size=batchsize_train, shuffle=True, num_workers=0)
 
     start = time.time()
     for ep in range(Epoch+1):
