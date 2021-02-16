@@ -287,8 +287,7 @@ def evaluate_synset(it_eval, net, images_train, labels_train, testloader, learni
     net = net.to(device)
     images_train = images_train.to(device)
     labels_train = labels_train.to(device)
-    lr = float(learningrate) # avoid changing the args object
-
+    lr = float(learningrate)
     lr_schedule = [Epoch//2+1]
     optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=0.9, weight_decay=0.0005)
     criterion = nn.CrossEntropyLoss().to(device)

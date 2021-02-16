@@ -24,16 +24,13 @@ def main():
     parser.add_argument('--batch_real', type=int, default=256, help='batch size for real data')
     parser.add_argument('--batch_train', type=int, default=256, help='batch size for training networks')
     parser.add_argument('--init', type=str, default='noise', help='initialization of synthetic data, noise/real: initialize from random noise or real images. The two initializations will get similar performances.')
-    parser.add_argument('--clip_syn', type=str, default='False', help='clip the pixel values of synthetic data')
     parser.add_argument('--data_path', type=str, default='data', help='dataset path')
     parser.add_argument('--save_path', type=str, default='result', help='path to save results')
     parser.add_argument('--dis_metric', type=str, default='ours', help='distance metric')
-    # The experimental results in the paper were obtained with --init noise and --clip_syn False.
     # For speeding up, we can decrease the Iteration and epoch_eval_train, which will not cause significant performance decrease.
 
 
     args = parser.parse_args()
-    args.clip_syn = True if args.clip_syn == 'True' else False
     args.outer_loop, args.inner_loop = get_loops(args.ipc)
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -110,15 +107,13 @@ def main():
                     print('-------------------------\nEvaluation\nmodel_train = %s, model_eval = %s, iteration = %d'%(args.model, model_eval, it))
                     param_augment = get_daparam(args.dataset, args.model, model_eval, args.ipc)
                     if param_augment['strategy'] != 'none':
-                        epoch_eval_train = 1000 # More training epochs for augmentation would be better.
+                        args.epoch_eval_train = 1000 # More epochs for evaluation with augmentation will be better.
                         print('data augmentation = %s'%param_augment)
-                    else:
-                        epoch_eval_train = args.epoch_eval_train
                     accs = []
                     for it_eval in range(args.num_eval):
                         net_eval = get_network(model_eval, channel, num_classes, im_size).to(args.device) # get a random model
                         image_syn_eval, label_syn_eval = copy.deepcopy(image_syn.detach()), copy.deepcopy(label_syn.detach()) # avoid any unaware modification
-                        _, acc_train, acc_test = evaluate_synset(it_eval, net_eval, image_syn_eval, label_syn_eval, testloader, args.lr_net, args.batch_train, param_augment, args.device, epoch_eval_train)
+                        _, acc_train, acc_test = evaluate_synset(it_eval, net_eval, image_syn_eval, label_syn_eval, testloader, args.lr_net, args.batch_train, param_augment, args.device, args.epoch_eval_train)
                         accs.append(acc_test)
                     print('Evaluate %d random %s, mean = %.4f std = %.4f\n-------------------------'%(len(accs), model_eval, np.mean(accs), np.std(accs)))
 
@@ -186,14 +181,6 @@ def main():
                 loss.backward()
                 optimizer_img.step()
                 loss_avg += loss.item()
-
-
-                if args.clip_syn: # clip synthetic data
-                    for ch in range(channel):
-                        image_syn_ch = image_syn[:, ch]
-                        clip_min, clip_max = (0.0 - mean[ch])/std[ch], (1.0 - mean[ch])/std[ch]
-                        image_syn_ch[image_syn_ch>clip_max].data[:] = clip_max
-                        image_syn_ch[image_syn_ch<clip_min].data[:] = clip_min
 
 
                 if ol == args.outer_loop - 1:
