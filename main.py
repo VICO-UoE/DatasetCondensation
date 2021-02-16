@@ -202,8 +202,8 @@ def main():
 
                 ''' update network to be unified with optimizer_img xxxxxxxxxxxxxxxxx '''
                 image_syn_train, label_syn_train = copy.deepcopy(image_syn.detach()), copy.deepcopy(label_syn.detach())  # avoid any unaware modification
-                dst_train = TensorDataset(image_syn_train, label_syn_train)
-                trainloader = torch.utils.data.DataLoader(dst_train, batch_size=256, shuffle=True, num_workers=0)
+                dst_syn_train = TensorDataset(image_syn_train, label_syn_train)
+                trainloader = torch.utils.data.DataLoader(dst_syn_train, batch_size=256, shuffle=True, num_workers=0)
                 for il in range(args.inner_loop):
                     epoch('train', trainloader, net, optimizer_net, criterion, None, args.device)
 
