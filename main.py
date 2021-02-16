@@ -128,7 +128,7 @@ def main():
                 image_syn_vis[image_syn_vis<0] = 0.0
                 image_syn_vis[image_syn_vis>1] = 1.0
                 save_image(image_syn_vis, save_name, nrow=args.ipc)
-                # The generated images would be slightly different from the visualization results in the paper, because of the clip and normalization of pixels.
+                # The generated images would be slightly different from the visualization results in the paper, because of the initialization and normalization of pixels.
 
             ''' Train synthetic data '''
             net = get_network(args.model, channel, num_classes, im_size).to(args.device) # get a random model
