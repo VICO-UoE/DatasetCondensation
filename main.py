@@ -107,13 +107,15 @@ def main():
                     print('-------------------------\nEvaluation\nmodel_train = %s, model_eval = %s, iteration = %d'%(args.model, model_eval, it))
                     param_augment = get_daparam(args.dataset, args.model, model_eval, args.ipc)
                     if param_augment['strategy'] != 'none':
-                        args.epoch_eval_train = 1000 # More epochs for evaluation with augmentation will be better.
+                        epoch_eval_train = 1000 # More epochs for evaluation with augmentation will be better.
                         print('data augmentation = %s'%param_augment)
+                    else:
+                        epoch_eval_train = args.epoch_eval_train
                     accs = []
                     for it_eval in range(args.num_eval):
                         net_eval = get_network(model_eval, channel, num_classes, im_size).to(args.device) # get a random model
                         image_syn_eval, label_syn_eval = copy.deepcopy(image_syn.detach()), copy.deepcopy(label_syn.detach()) # avoid any unaware modification
-                        _, acc_train, acc_test = evaluate_synset(it_eval, net_eval, image_syn_eval, label_syn_eval, testloader, args.lr_net, args.batch_train, param_augment, args.device, args.epoch_eval_train)
+                        _, acc_train, acc_test = evaluate_synset(it_eval, net_eval, image_syn_eval, label_syn_eval, testloader, args.lr_net, args.batch_train, param_augment, args.device, epoch_eval_train)
                         accs.append(acc_test)
                     print('Evaluate %d random %s, mean = %.4f std = %.4f\n-------------------------'%(len(accs), model_eval, np.mean(accs), np.std(accs)))
 
