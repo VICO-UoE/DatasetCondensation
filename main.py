@@ -72,7 +72,6 @@ def main():
         for c in range(num_classes):
             print('class c = %d: %d real images'%(c, len(indices_class[c])))
 
-
         def get_images(c, n): # get random n images from class c
             idx_shuffle = np.random.permutation(indices_class[c])[:n]
             return images_all[idx_shuffle]
@@ -129,8 +128,9 @@ def main():
                     image_syn_vis[:, ch] = image_syn_vis[:, ch]  * std[ch] + mean[ch]
                 image_syn_vis[image_syn_vis<0] = 0.0
                 image_syn_vis[image_syn_vis>1] = 1.0
-                save_image(image_syn_vis, save_name, nrow=args.ipc)
+                save_image(image_syn_vis, save_name, nrow=args.ipc) # Trying normalize = True/False may get better visual effects.
                 # The generated images would be slightly different from the visualization results in the paper, because of the initialization and normalization of pixels.
+
 
             ''' Train synthetic data '''
             net = get_network(args.model, channel, num_classes, im_size).to(args.device) # get a random model
@@ -146,7 +146,8 @@ def main():
                 ''' freeze the running mu and sigma for BatchNorm layers '''
                 # Synthetic data batch, e.g. only 1 image/batch, is too small to obtain stable mu and sigma.
                 # So, we calculate and freeze mu and sigma for BatchNorm layer with real data batch ahead.
-                # This would make the model with BatchNorm layers easier to train.
+                # This would make the training with BatchNorm layers easier.
+
                 BN_flag = False
                 BNSizePC = 16  # for batch normalization
                 for module in net.modules():
@@ -184,12 +185,11 @@ def main():
                 optimizer_img.step()
                 loss_avg += loss.item()
 
-
                 if ol == args.outer_loop - 1:
                     break
 
 
-                ''' update network to be unified with optimizer_img xxxxxxxxxxxxxxxxx '''
+                ''' update network '''
                 image_syn_train, label_syn_train = copy.deepcopy(image_syn.detach()), copy.deepcopy(label_syn.detach())  # avoid any unaware modification
                 dst_syn_train = TensorDataset(image_syn_train, label_syn_train)
                 trainloader = torch.utils.data.DataLoader(dst_syn_train, batch_size=256, shuffle=True, num_workers=0)
