@@ -54,6 +54,17 @@ python main.py  --dataset MNIST  --model ConvNet  --ipc 1  --dis_metric mse
 # --model: MLP, LeNet, ConvNet, AlexNet, VGG11BN, ResNet18BN_AP
 ```
 
+
+### Performance
+|  | MNIST | FashionMNIST | SVHN | CIFAR10 |
+ :-: | :-: | :-: | :-: | :-:
+| 1 img/cls  | 91.7 | 70.5 | 31.2 | 28.3 |
+| 10 img/cls | 97.4 | 82.3 | 76.1 | 44.9 |
+| 50 img/cls | 98.8 | 83.6 | 82.3 | 53.9 |
+
+Table 1: Testing accuracies (%) of ConvNets trained from scratch on 1, 10 or 50 synthetic image(s)/class.
+
+
 ### Visualization
 <p align="center"><img src='docs/1ipc.png' width=500></p>
 <center>Figure 2: Visualization of condensed 1 image/class with ConvNet for MNIST, FashionMNIST, SVHN and CIFAR10. Average testing accuracies on randomly initialized ConvNets are 91.7%, 70.5%, 31.2% and 28.3% respectively. </center><br>
