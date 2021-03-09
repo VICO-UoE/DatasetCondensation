@@ -192,7 +192,7 @@ def main():
                 ''' update network '''
                 image_syn_train, label_syn_train = copy.deepcopy(image_syn.detach()), copy.deepcopy(label_syn.detach())  # avoid any unaware modification
                 dst_syn_train = TensorDataset(image_syn_train, label_syn_train)
-                trainloader = torch.utils.data.DataLoader(dst_syn_train, batch_size=256, shuffle=True, num_workers=0)
+                trainloader = torch.utils.data.DataLoader(dst_syn_train, batch_size=args.batch_train, shuffle=True, num_workers=0)
                 for il in range(args.inner_loop):
                     epoch('train', trainloader, net, optimizer_net, criterion, None, args.device)
 
