@@ -87,3 +87,19 @@ url={https://openreview.net/forum?id=mSAKhLYLSsl}
 }
 ```
 
+
+
+## Dataset Condensation with Differentiable Siamese Augmentation [[PDF]](https://arxiv.org/pdf/2102.08259.pdf)
+
+will come out soon.
+
+### Citation
+```
+@article{zhao2021dataset,
+  title={Dataset Condensation with Differentiable Siamese Augmentation},
+  author={Zhao, Bo and Bilen, Hakan},
+  journal={Proceedings of the 38th International Conference on MachineLearning},
+  year={2021}
+}
+```
+
