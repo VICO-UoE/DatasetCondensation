@@ -78,7 +78,7 @@ Table 1: Testing accuracies (%) of ConvNets trained from scratch on 1, 10 or 50 
 ### Citation
 ```
 @inproceedings{
-zhao2021dataset,
+zhao2021DC,
 title={Dataset Condensation with Gradient Matching},
 author={Bo Zhao and Konda Reddy Mopuri and Hakan Bilen},
 booktitle={International Conference on Learning Representations},
@@ -95,11 +95,12 @@ will come out soon.
 
 ### Citation
 ```
-@article{zhao2021dataset,
-  title={Dataset Condensation with Differentiable Siamese Augmentation},
-  author={Zhao, Bo and Bilen, Hakan},
-  journal={Proceedings of the 38th International Conference on MachineLearning},
-  year={2021}
+@inproceedings{
+zhao2021DSA,
+title={Dataset Condensation with Differentiable Siamese Augmentation},
+author={Zhao, Bo and Bilen, Hakan},
+booktitle={International Conference on Machine Learning},
+year={2021}
 }
 ```
 
