@@ -1,11 +1,12 @@
 import os
+import time
 import copy
 import argparse
 import numpy as np
 import torch
 import torch.nn as nn
 from torchvision.utils import save_image
-from utils import get_loops, get_dataset, get_network, get_eval_pool, evaluate_synset, get_daparam, match_loss, get_time, TensorDataset, epoch
+from utils import get_loops, get_dataset, get_network, get_eval_pool, evaluate_synset, get_daparam, match_loss, get_time, TensorDataset, epoch, DiffAugment, ParamDiffAug
 
 
 def main():
@@ -23,16 +24,18 @@ def main():
     parser.add_argument('--lr_net', type=float, default=0.01, help='learning rate for updating network parameters')
     parser.add_argument('--batch_real', type=int, default=256, help='batch size for real data')
     parser.add_argument('--batch_train', type=int, default=256, help='batch size for training networks')
-    parser.add_argument('--init', type=str, default='noise', help='initialization of synthetic data, noise/real: initialize from random noise or real images. The two initializations will get similar performances.')
+    parser.add_argument('--init', type=str, default='noise', help='noise/real: initialize synthetic images from random noise or randomly sampled real images.')
+    parser.add_argument('--dsa', type=str, default='False', help='whether to use differentiable Siamese augmentation.')
+    parser.add_argument('--dsa_strategy', type=str, default='None', help='differentiable Siamese augmentation strategy')
     parser.add_argument('--data_path', type=str, default='data', help='dataset path')
     parser.add_argument('--save_path', type=str, default='result', help='path to save results')
     parser.add_argument('--dis_metric', type=str, default='ours', help='distance metric')
-    # For speeding up, we can decrease the Iteration and epoch_eval_train, which will not cause significant performance decrease.
-
 
     args = parser.parse_args()
     args.outer_loop, args.inner_loop = get_loops(args.ipc)
+    args.dsa = True if args.dsa == 'True' else False
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    args.dsa_param = ParamDiffAug()
 
     if not os.path.exists(args.data_path):
         os.mkdir(args.data_path)
@@ -104,17 +107,25 @@ def main():
             if it in eval_it_pool:
                 for model_eval in model_eval_pool:
                     print('-------------------------\nEvaluation\nmodel_train = %s, model_eval = %s, iteration = %d'%(args.model, model_eval, it))
-                    param_augment = get_daparam(args.dataset, args.model, model_eval, args.ipc)
-                    if param_augment['strategy'] != 'none':
-                        epoch_eval_train = 1000 # More epochs for evaluation with augmentation will be better.
-                        print('data augmentation = %s'%param_augment)
+                    if args.dsa:
+                        args.epoch_eval_train = 1000
+                        args.dc_aug_param = None
+                        print('DSA augmentation strategy: \n', args.dsa_strategy)
+                        print('DSA augmentation parameters: \n', args.dsa_param.__dict__)
                     else:
-                        epoch_eval_train = args.epoch_eval_train
+                        args.dc_aug_param = get_daparam(args.dataset, args.model, model_eval, args.ipc) # This augmentation parameter set is only for DC method. It will be muted when args.dsa is True.
+                        print('DC augmentation parameters: \n', args.dc_aug_param)
+
+                    if args.dsa or args.dc_aug_param['strategy'] != 'none':
+                        args.epoch_eval_train = 1000  # Training with data augmentation needs more epochs.
+                    else:
+                        args.epoch_eval_train = 300
+
                     accs = []
                     for it_eval in range(args.num_eval):
                         net_eval = get_network(model_eval, channel, num_classes, im_size).to(args.device) # get a random model
                         image_syn_eval, label_syn_eval = copy.deepcopy(image_syn.detach()), copy.deepcopy(label_syn.detach()) # avoid any unaware modification
-                        _, acc_train, acc_test = evaluate_synset(it_eval, net_eval, image_syn_eval, label_syn_eval, testloader, args.lr_net, args.batch_train, param_augment, args.device, epoch_eval_train)
+                        _, acc_train, acc_test = evaluate_synset(it_eval, net_eval, image_syn_eval, label_syn_eval, testloader, args)
                         accs.append(acc_test)
                     print('Evaluate %d random %s, mean = %.4f std = %.4f\n-------------------------'%(len(accs), model_eval, np.mean(accs), np.std(accs)))
 
@@ -129,16 +140,16 @@ def main():
                 image_syn_vis[image_syn_vis<0] = 0.0
                 image_syn_vis[image_syn_vis>1] = 1.0
                 save_image(image_syn_vis, save_name, nrow=args.ipc) # Trying normalize = True/False may get better visual effects.
-                # The generated images would be slightly different from the visualization results in the paper, because of the initialization and normalization of pixels.
 
 
             ''' Train synthetic data '''
             net = get_network(args.model, channel, num_classes, im_size).to(args.device) # get a random model
             net.train()
             net_parameters = list(net.parameters())
-            optimizer_net = torch.optim.SGD(net.parameters(), lr=args.lr_net, momentum=0.5)  # optimizer_img for synthetic data
+            optimizer_net = torch.optim.SGD(net.parameters(), lr=args.lr_net)  # optimizer_img for synthetic data
             optimizer_net.zero_grad()
             loss_avg = 0
+            args.dc_aug_param = None  # Mute the DC augmentation when training synthetic data.
 
 
             for ol in range(args.outer_loop):
@@ -167,13 +178,19 @@ def main():
                 for c in range(num_classes):
                     img_real = get_images(c, args.batch_real)
                     lab_real = torch.ones((img_real.shape[0],), device=args.device, dtype=torch.long) * c
+                    img_syn = image_syn[c*args.ipc:(c+1)*args.ipc].reshape((args.ipc, channel, im_size[0], im_size[1]))
+                    lab_syn = torch.ones((args.ipc,), device=args.device, dtype=torch.long) * c
+
+                    if args.dsa:
+                        seed = int(time.time() * 1000) % 100000
+                        img_real = DiffAugment(img_real, args.dsa_strategy, seed=seed, param=args.dsa_param)
+                        img_syn = DiffAugment(img_syn, args.dsa_strategy, seed=seed, param=args.dsa_param)
+
                     output_real = net(img_real)
                     loss_real = criterion(output_real, lab_real)
                     gw_real = torch.autograd.grad(loss_real, net_parameters)
                     gw_real = list((_.detach().clone() for _ in gw_real))
 
-                    img_syn = image_syn[c*args.ipc:(c+1)*args.ipc].reshape((args.ipc, channel, im_size[0], im_size[1]))
-                    lab_syn = torch.ones((args.ipc,), device=args.device, dtype=torch.long) * c
                     output_syn = net(img_syn)
                     loss_syn = criterion(output_syn, lab_syn)
                     gw_syn = torch.autograd.grad(loss_syn, net_parameters, create_graph=True)
@@ -194,7 +211,7 @@ def main():
                 dst_syn_train = TensorDataset(image_syn_train, label_syn_train)
                 trainloader = torch.utils.data.DataLoader(dst_syn_train, batch_size=args.batch_train, shuffle=True, num_workers=0)
                 for il in range(args.inner_loop):
-                    epoch('train', trainloader, net, optimizer_net, criterion, None, args.device)
+                    epoch('train', trainloader, net, optimizer_net, criterion, args, aug = True if args.dsa else False)
 
 
             loss_avg /= (num_classes*args.outer_loop)
