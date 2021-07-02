@@ -95,7 +95,7 @@ url={https://openreview.net/forum?id=mSAKhLYLSsl}
 
 ## Dataset Condensation with Differentiable Siamese Augmentation [[PDF]](https://arxiv.org/pdf/2102.08259.pdf)
 ### Method
-<p align="center"><img src='docs/method_DSA.png' width=750></p>
+<p align="center"><img src='docs/method_DSA.png' width=700></p>
 <center>Figure 4: Differentiable Siamese augmentation (DSA) applies the same parametric augmentation (e.g. rotation) to all data points in the sampled real and synthetic batches in a training iteration. The gradients of network parameters w.r.t. the sampled real and synthetic batches are matched for updating the synthetic images. A DSA example is given that rotation with the same degree is applied to the sampled real and synthetic batches.. </center><br>
 
 
