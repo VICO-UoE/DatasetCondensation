@@ -1,9 +1,13 @@
+# Dataset Condensation
+Dataset condensation aims to condense a large training set T into a small synthetic set S such that the model trained on the small synthetic set can obtain comparable testing performance to that trained on the large training set.
+
+This repository includes codes for *Dataset Condensation with Gradient Matching* (ICLR 2021 Oral) and *Dataset Condensation with Differentiable Siamese Augmentation* (ICML 2021).
 
 ## Dataset Condensation with Gradient Matching [[PDF]](https://openreview.net/pdf?id=mSAKhLYLSsl)
 
 
 ### Method
-<p align="center"><img src='docs/method.png' width=750></p>
+<p align="center"><img src='docs/method.png' width=700></p>
 <center>Figure 1: Dataset Condensation (left) aims to generate a small set of synthetic images that can match the performance of a network trained on a large image dataset. Our method (right) realizes this goal by learning a synthetic set such that a deep network trained on it and the large set produces similar gradients w.r.t. the parameters. The synthetic data can later be used to train a network from scratch in a fraction of the original computational load. CE denotes Cross-Entropy. </center><br>
 
 ### Setup
@@ -12,7 +16,7 @@ install packages in the requirements.
 ###  Basic experiments - Table 1
 ```
 python main.py  --dataset CIFAR10  --model ConvNet  --ipc 10
-# --dataset: MNIST, FashionMNIST, SVHN, CIFAR10
+# --dataset: MNIST, FashionMNIST, SVHN, CIFAR10, CIFAR100
 # --ipc (images/class): 1, 10, 20, 30, 40, 50
 ```
 
@@ -56,21 +60,21 @@ python main.py  --dataset MNIST  --model ConvNet  --ipc 1  --dis_metric mse
 
 
 ### Performance
-|  | MNIST | FashionMNIST | SVHN | CIFAR10 |
- :-: | :-: | :-: | :-: | :-:
-| 1 img/cls  | 91.7 | 70.5 | 31.2 | 28.3 |
-| 10 img/cls | 97.4 | 82.3 | 76.1 | 44.9 |
-| 50 img/cls | 98.8 | 83.6 | 82.3 | 53.9 |
+|  | MNIST | FashionMNIST | SVHN | CIFAR10 | CIFAR100 |
+ :-: | :-: | :-: | :-: | :-: | :-:
+| 1 img/cls  | 91.7 | 70.5 | 31.2 | 28.3 | 12.8 |
+| 10 img/cls | 97.4 | 82.3 | 76.1 | 44.9 | 25.2 |
+| 50 img/cls | 98.8 | 83.6 | 82.3 | 53.9 | - |
 
 Table 1: Testing accuracies (%) of ConvNets trained from scratch on 1, 10 or 50 synthetic image(s)/class.
 
 
 ### Visualization
-<p align="center"><img src='docs/1ipc.png' width=500></p>
+<p align="center"><img src='docs/1ipc.png' width=400></p>
 <center>Figure 2: Visualization of condensed 1 image/class with ConvNet for MNIST, FashionMNIST, SVHN and CIFAR10. Average testing accuracies on randomly initialized ConvNets are 91.7%, 70.5%, 31.2% and 28.3% respectively. </center><br>
 
 
-<p align="center"><img src='docs/10ipc.png' width=800></p>
+<p align="center"><img src='docs/10ipc.png' width=700></p>
 <center>Figure 3: Visualization of condensed 10 images/class with ConvNet for MNIST, FashionMNIST, SVHN and CIFAR10. Average testing accuracies on randomly initialized ConvNets are 97.4%, 82.3%, 76.1% and 44.9% respectively. </center><br>
 
 
@@ -90,8 +94,51 @@ url={https://openreview.net/forum?id=mSAKhLYLSsl}
 
 
 ## Dataset Condensation with Differentiable Siamese Augmentation [[PDF]](https://arxiv.org/pdf/2102.08259.pdf)
+### Method
+<p align="center"><img src='docs/method_DSA.png' width=750></p>
+<center>Figure 4: Differentiable Siamese augmentation (DSA) applies the same parametric augmentation (e.g. rotation) to all data points in the sampled real and synthetic batches in a training iteration. The gradients of network parameters w.r.t. the sampled real and synthetic batches are matched for updating the synthetic images. A DSA example is given that rotation with the same degree is applied to the sampled real and synthetic batches.. </center><br>
 
-will come out soon.
+
+### Setup
+install packages in the requirements.
+
+
+###  Basic experiments - Table 1 & 2
+```
+python main.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --init real  --dsa True  --dsa_strategy color_crop_cutout_flip_scale_rotate
+# --dataset: MNIST, FashionMNIST, SVHN, CIFAR10, CIFAR100
+# --ipc (images/class): 1, 10, 20, 30, 40, 50
+# note: use color_crop_cutout_flip_scale_rotate for FashionMNIST CIFAR10/100, and color_crop_cutout_scale_rotate for the digit datasets (MNIST and SVHN), as flip augmentation is not good for digit datasets.
+```
+
+
+### Ablation study on augmentation strategies - Table 4
+```
+python main.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --init real  --dsa True  --dsa_strategy crop
+# --dataset: MNIST, FashionMNIST, SVHN, CIFAR10
+# --dsa_strategy: color, crop, cutout, flip, scale, rotate, color_crop_cutout_scale_rotate, color_crop_cutout_flip_scale_rotate
+# note: flip augmentation is not good for digit datasets (MNIST and SVHN).
+```
+
+### Performance
+|  | MNIST | FashionMNIST | SVHN | CIFAR10 | CIFAR100 |
+ :-: | :-: | :-: | :-: | :-: | :-:
+| 1 img/cls  | 88.7 | 70.6 | 27.5 | 28.8 | 13.9 |
+| 10 img/cls | 97.8 | 84.6 | 79.2 | 52.1 | 32.3 |
+| 50 img/cls | 99.2 | 88.7 | 84.4 | 60.6 | - |
+
+Table 2: Testing accuracies (%) of ConvNets trained from scratch on 1, 10 or 50 synthetic image(s)/class.
+
+
+### Visualization
+<p align="center"><img src='docs/10ipc_DSA.png' width=700></p>
+<center>Figure 5: Visualization of the generated 10 images/class synthetic sets of MINIST and CIFAR10. Average testing accuracies on randomly initialized ConvNets are 97.8% and 52.1% respectively. </center><br>
+
+
+### Initialization
+<p align="center"><img src='docs/rendering_DSA.png' width=500></p>
+<center>Figure 6: The learning/rendering process of two classes in CIFAR10 initialized from random noise and real images respectively. </center><br>
+
 
 ### Citation
 ```
