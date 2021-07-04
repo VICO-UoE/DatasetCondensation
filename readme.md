@@ -3,6 +3,8 @@ Dataset condensation aims to condense a large training set T into a small synthe
 
 This repository includes codes for *Dataset Condensation with Gradient Matching* (ICLR 2021 Oral) and *Dataset Condensation with Differentiable Siamese Augmentation* (ICML 2021).
 
+Off-the-shelf synthetic sets can be downloaded from [Google Drive](https://drive.google.com/drive/folders/1Dp6V6RvhJQPsB-2uZCwdlHXf1iJ9Wb_g?usp=sharing). Each *.pt* file includes 5 synthetic sets from 5 independent experiments. Note that these synthetic data *have been* normalized. These are temporal data, and I will update them a few days later.
+
 ## Dataset Condensation with Gradient Matching [[PDF]](https://openreview.net/pdf?id=mSAKhLYLSsl)
 
 
