@@ -158,7 +158,7 @@ def get_network(model, channel, num_classes, im_size=(32, 32)):
 
     else:
         net = None
-        exit('DC error: unknown model')
+        exit('unknown model: %s'%model)
 
     gpu_num = torch.cuda.device_count()
     if gpu_num>0:
@@ -229,7 +229,7 @@ def match_loss(gw_syn, gw_real, args):
         dis = 1 - torch.sum(gw_real_vec * gw_syn_vec, dim=-1) / (torch.norm(gw_real_vec, dim=-1) * torch.norm(gw_syn_vec, dim=-1) + 0.000001)
 
     else:
-        exit('DC error: unknown distance function')
+        exit('unknown distance function: %s'%args.dis_metric)
 
     return dis
 
@@ -252,7 +252,7 @@ def get_loops(ipc):
         outer_loop, inner_loop = 50, 10
     else:
         outer_loop, inner_loop = 0, 0
-        exit('DC error: loop hyper-parameters are not defined for %d ipc'%ipc)
+        exit('loop hyper-parameters are not defined for %d ipc'%ipc)
     return outer_loop, inner_loop
 
 
@@ -473,7 +473,7 @@ def DiffAugment(x, strategy='', seed = -1, param = None):
             for f in AUGMENT_FNS[p]:
                 x = f(x, param)
         else:
-            exit('Error ZH: unknown augmentation mode.')
+            exit('unknown augmentation mode: %s'%param.aug_mode)
         x = x.contiguous()
     return x
 
