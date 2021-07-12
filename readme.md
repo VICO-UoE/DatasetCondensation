@@ -3,7 +3,7 @@ Dataset condensation aims to condense a large training set T into a small synthe
 
 This repository includes codes for *Dataset Condensation with Gradient Matching* (ICLR 2021 Oral) and *Dataset Condensation with Differentiable Siamese Augmentation* (ICML 2021).
 
-Off-the-shelf synthetic sets can be downloaded from [Google Drive](https://drive.google.com/drive/folders/1Dp6V6RvhJQPsB-2uZCwdlHXf1iJ9Wb_g?usp=sharing). Each *.pt* file includes 5 synthetic sets from 5 independent experiments. Note that these synthetic data *have been* normalized. These are temporal data and should work well. I will update them a few days later after running all experiments again.
+Off-the-shelf synthetic sets can be downloaded from [Google Drive](https://drive.google.com/drive/folders/1Dp6V6RvhJQPsB-2uZCwdlHXf1iJ9Wb_g?usp=sharing). Each *.pt* file includes 5 synthetic sets learned with ConvNet in 5 independent experiments and corresponding 100 testing accuracies. Note that these synthetic data *have been* normalized.
 
 ## Dataset Condensation with Gradient Matching [[PDF]](https://openreview.net/pdf?id=mSAKhLYLSsl)
 
@@ -107,7 +107,7 @@ install packages in the requirements.
 
 ###  Basic experiments - Table 1 & 2
 ```
-python main.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --init real  --dsa True  --dsa_strategy color_crop_cutout_flip_scale_rotate
+python main.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --init real  --method DSA  --dsa_strategy color_crop_cutout_flip_scale_rotate
 # --dataset: MNIST, FashionMNIST, SVHN, CIFAR10, CIFAR100
 # --ipc (images/class): 1, 10, 20, 30, 40, 50
 # note: use color_crop_cutout_flip_scale_rotate for FashionMNIST CIFAR10/100, and color_crop_cutout_scale_rotate for the digit datasets (MNIST and SVHN), as flip augmentation is not good for digit datasets.
@@ -116,7 +116,7 @@ python main.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --init real  --dsa
 
 ### Ablation study on augmentation strategies - Table 4
 ```
-python main.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --init real  --dsa True  --dsa_strategy crop
+python main.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --init real  --method DSA  --dsa_strategy crop
 # --dataset: MNIST, FashionMNIST, SVHN, CIFAR10
 # --dsa_strategy: color, crop, cutout, flip, scale, rotate, color_crop_cutout_scale_rotate, color_crop_cutout_flip_scale_rotate
 # note: flip augmentation is not good for digit datasets (MNIST and SVHN).
