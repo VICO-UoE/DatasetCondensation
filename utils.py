@@ -452,9 +452,9 @@ def set_seed_DiffAug(param):
 
 def DiffAugment(x, strategy='', seed = -1, param = None):
     if seed == -1:
-        param.batchmode = False
+        param.Siamese = False
     else:
-        param.batchmode = True
+        param.Siamese = True
 
     param.latestseed = seed
 
@@ -490,7 +490,7 @@ def rand_scale(x, param):
     theta = [[[sx[i], 0,  0],
             [0,  sy[i], 0],] for i in range(x.shape[0])]
     theta = torch.tensor(theta, dtype=torch.float)
-    if param.batchmode: # batch-wise:
+    if param.Siamese: # Siamese augmentation:
         theta[:] = theta[0]
     grid = F.affine_grid(theta, x.shape).to(x.device)
     x = F.grid_sample(x, grid)
@@ -504,7 +504,7 @@ def rand_rotate(x, param): # [-180, 180], 90: anticlockwise 90 degree
     theta = [[[torch.cos(theta[i]), torch.sin(-theta[i]), 0],
         [torch.sin(theta[i]), torch.cos(theta[i]),  0],]  for i in range(x.shape[0])]
     theta = torch.tensor(theta, dtype=torch.float)
-    if param.batchmode: # batch-wise:
+    if param.Siamese: # Siamese augmentation:
         theta[:] = theta[0]
     grid = F.affine_grid(theta, x.shape).to(x.device)
     x = F.grid_sample(x, grid)
@@ -515,7 +515,7 @@ def rand_flip(x, param):
     prob = param.prob_flip
     set_seed_DiffAug(param)
     randf = torch.rand(x.size(0), 1, 1, 1, device=x.device)
-    if param.batchmode: # batch-wise:
+    if param.Siamese: # Siamese augmentation:
         randf[:] = randf[0]
     return torch.where(randf < prob, x.flip(3), x)
 
@@ -524,7 +524,7 @@ def rand_brightness(x, param):
     ratio = param.brightness
     set_seed_DiffAug(param)
     randb = torch.rand(x.size(0), 1, 1, 1, dtype=x.dtype, device=x.device)
-    if param.batchmode:  # batch-wise:
+    if param.Siamese:  # Siamese augmentation:
         randb[:] = randb[0]
     x = x + (randb - 0.5)*ratio
     return x
@@ -535,7 +535,7 @@ def rand_saturation(x, param):
     x_mean = x.mean(dim=1, keepdim=True)
     set_seed_DiffAug(param)
     rands = torch.rand(x.size(0), 1, 1, 1, dtype=x.dtype, device=x.device)
-    if param.batchmode:  # batch-wise:
+    if param.Siamese:  # Siamese augmentation:
         rands[:] = rands[0]
     x = (x - x_mean) * (rands * ratio) + x_mean
     return x
@@ -546,7 +546,7 @@ def rand_contrast(x, param):
     x_mean = x.mean(dim=[1, 2, 3], keepdim=True)
     set_seed_DiffAug(param)
     randc = torch.rand(x.size(0), 1, 1, 1, dtype=x.dtype, device=x.device)
-    if param.batchmode:  # batch-wise:
+    if param.Siamese:  # Siamese augmentation:
         randc[:] = randc[0]
     x = (x - x_mean) * (randc + ratio) + x_mean
     return x
@@ -560,7 +560,7 @@ def rand_crop(x, param):
     translation_x = torch.randint(-shift_x, shift_x + 1, size=[x.size(0), 1, 1], device=x.device)
     set_seed_DiffAug(param)
     translation_y = torch.randint(-shift_y, shift_y + 1, size=[x.size(0), 1, 1], device=x.device)
-    if param.batchmode:  # batch-wise:
+    if param.Siamese:  # Siamese augmentation:
         translation_x[:] = translation_x[0]
         translation_y[:] = translation_y[0]
     grid_batch, grid_x, grid_y = torch.meshgrid(
@@ -582,7 +582,7 @@ def rand_cutout(x, param):
     offset_x = torch.randint(0, x.size(2) + (1 - cutout_size[0] % 2), size=[x.size(0), 1, 1], device=x.device)
     set_seed_DiffAug(param)
     offset_y = torch.randint(0, x.size(3) + (1 - cutout_size[1] % 2), size=[x.size(0), 1, 1], device=x.device)
-    if param.batchmode:  # batch-wise:
+    if param.Siamese:  # Siamese augmentation:
         offset_x[:] = offset_x[0]
         offset_y[:] = offset_y[0]
     grid_batch, grid_x, grid_y = torch.meshgrid(
