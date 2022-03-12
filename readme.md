@@ -153,3 +153,24 @@ year={2021}
 }
 ```
 
+
+## Dataset Condensation with Distribution Matching [[PDF]](https://arxiv.org/pdf/2110.04181.pdf)
+Preliminary code for DM method. It should works. We will polish it soon. 
+###  Basic experiments
+```
+python main_DM.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --dsa_strategy color_crop_cutout_flip_scale_rotate  --init real  --lr_img 1.0  --num_exp 5  --num_eval 5 
+```
+
+### Citation
+```
+@article{zhao2021dataset,
+  title={Dataset Condensation with Distribution Matching},
+  author={Zhao, Bo and Bilen, Hakan},
+  journal={arXiv preprint arXiv:2110.04181},
+  year={2021}
+}
+```
+
+
+
+
