@@ -1,7 +1,7 @@
 # Dataset Condensation
 Dataset condensation aims to condense a large training set T into a small synthetic set S such that the model trained on the small synthetic set can obtain comparable testing performance to that trained on the large training set.
 
-This repository includes codes for *Dataset Condensation with Gradient Matching* (ICLR 2021 Oral) and *Dataset Condensation with Differentiable Siamese Augmentation* (ICML 2021).
+This repository includes codes for *Dataset Condensation with Gradient Matching* (ICLR 2021 Oral), *Dataset Condensation with Differentiable Siamese Augmentation* (ICML 2021) and *Dataset Condensation with Distribution Matching* (arXiv 2021).
 
 Off-the-shelf synthetic sets can be downloaded from [Google Drive](https://drive.google.com/drive/folders/1Dp6V6RvhJQPsB-2uZCwdlHXf1iJ9Wb_g?usp=sharing). Each *.pt* file includes 5 synthetic sets learned with ConvNet in 5 independent experiments and corresponding 100 testing accuracies. Note that these synthetic data *have been* normalized.
 
