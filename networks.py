@@ -37,6 +37,11 @@ class ConvNet(nn.Module):
         out = self.classifier(out)
         return out
 
+    def embed(self, x):
+        out = self.features(x)
+        out = out.view(out.size(0), -1)
+        return out
+
     def _get_activation(self, net_act):
         if net_act == 'sigmoid':
             return nn.Sigmoid()
