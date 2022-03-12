@@ -98,7 +98,7 @@ url={https://openreview.net/forum?id=mSAKhLYLSsl}
 ## Dataset Condensation with Differentiable Siamese Augmentation [[PDF]](http://proceedings.mlr.press/v139/zhao21a/zhao21a.pdf)
 ### Method
 <p align="center"><img src='docs/method_DSA.png' width=700></p>
-<center>Figure 4: Differentiable Siamese augmentation (DSA) applies the same parametric augmentation (e.g. rotation) to all data points in the sampled real and synthetic batches in a training iteration. The gradients of network parameters w.r.t. the sampled real and synthetic batches are matched for updating the synthetic images. A DSA example is given that rotation with the same degree is applied to the sampled real and synthetic batches.. </center><br>
+<center>Figure 4: Differentiable Siamese augmentation (DSA) applies the same parametric augmentation (e.g. rotation) to all data points in the sampled real and synthetic batches in a training iteration. The gradients of network parameters w.r.t. the sampled real and synthetic batches are matched for updating the synthetic images. A DSA example is given that rotation with the same degree is applied to the sampled real and synthetic batches. </center><br>
 
 
 ### Setup
@@ -155,11 +155,44 @@ year={2021}
 
 
 ## Dataset Condensation with Distribution Matching [[PDF]](https://arxiv.org/pdf/2110.04181.pdf)
-Preliminary code for DM method. It should works. We will polish it soon. 
+___Preliminary code for DM method. It should work. We will polish it soon.___
+### Method
+<p align="center"><img src='docs/method_DM.png' width=700></p>
+<center>Figure 7: Dataset Condensation with Distribution Matching. We
+randomly sample real and synthetic data, and then embed them
+with the randomly sampled deep neural networks. We learn the
+synthetic data by minimizing the distribution discrepancy between
+real and synthetic data in these sampled embedding spaces. </center><br>
+
+
+### Setup
+install packages in the requirements.
+
 ###  Basic experiments
 ```
 python main_DM.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --dsa_strategy color_crop_cutout_flip_scale_rotate  --init real  --lr_img 1.0  --num_exp 5  --num_eval 5 
 ```
+
+###  Continual learning experiments
+We do 5 experiments with 5 seeds to generate the class order for both 5 and 10 step learning:
+```
+for seed_cl in range(5):
+    np.random.seed(seed_cl)
+    class_order = np.random.permutation(num_classes).tolist()
+```
+Please download the synthetic sets from [Google Drive](https://drive.google.com/drive/folders/1NEnf_85Hpa2fhztWIxsiDQC1C2w_1YQA?usp=sharing) which are learned in the continual learning scenario and put them into the data path (refer to the code). Then run CL_DM.py using the following scripts:
+```
+python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 5 --method random 
+python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 5 --method herding 
+python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 5 --method DSA 
+python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 5 --method DM 
+
+python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 10 --method random 
+python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 10 --method herding 
+python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 10 --method DSA 
+python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 10 --method DM 
+```
+
 
 ### Citation
 ```
