@@ -206,5 +206,9 @@ python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 10 --method DM
 ```
 
 
+## Extra Tricks
+We find that [swish](https://en.wikipedia.org/wiki/Swish_function) activation function can boost Dataset Condensation performance.
+
+
 
 
