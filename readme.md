@@ -68,7 +68,7 @@ python main.py  --dataset MNIST  --model ConvNet  --ipc 1  --dis_metric mse
 | 10 img/cls | 97.4 | 82.3 | 76.1 | 44.9 | 25.2 |
 | 50 img/cls | 98.8 | 83.6 | 82.3 | 53.9 | - |
 
-Table 1: Testing accuracies (%) of ConvNets trained from scratch on 1, 10 or 50 synthetic image(s)/class. Note that the performances are achieved with defult hyper-parameters. You may obtain better results, if you try more hyper-parameters.
+Table 1: Testing accuracies (%) of ConvNets trained from scratch on 1, 10 or 50 synthetic image(s)/class. Note that the performances are achieved with defult hyper-parameters. Better results can be obtained, if more hyper-parameters are tried.
 
 
 ### Visualization
@@ -129,7 +129,7 @@ python main.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --init real  --met
 | 10 img/cls | 97.8 | 84.6 | 79.2 | 52.1 | 32.3 |
 | 50 img/cls | 99.2 | 88.7 | 84.4 | 60.6 | - |
 
-Table 2: Testing accuracies (%) of ConvNets trained from scratch on 1, 10 or 50 synthetic image(s)/class. Note that the performances are achieved with defult hyper-parameters. You may obtain better results, if you try more hyper-parameters.
+Table 2: Testing accuracies (%) of ConvNets trained from scratch on 1, 10 or 50 synthetic image(s)/class. Note that the performances are achieved with defult hyper-parameters. Better results can be obtained, if more hyper-parameters are tried.
 
 
 ### Visualization
