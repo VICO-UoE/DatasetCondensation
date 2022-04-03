@@ -171,8 +171,7 @@ install packages in the requirements.
 ###  Basic experiments
 ```
 python main_DM.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --dsa_strategy color_crop_cutout_flip_scale_rotate  --init real  --lr_img 1  --num_exp 5  --num_eval 5 
-# --lr_img 1 for --ipc = 1/10/50
-# --lr_img 10 for --ipc = 100/200/500/1000
+# Empirically, --lr_img 1 for --ipc = 1/10/50, --lr_img 10 for --ipc = 100/200/500/1000. The best learning rate is validated on CIFAR10 roughly and may vary on different datasets and settings.
 ```
 DM achieves 67.0 ± 0.3%, 71.2 ± 0.4%, 76.1±0.3% and 79.8±0.3% testing accuracies with ConvNets when learning 100, 200, 500 and 1000 images/class synthetic sets on CIFAR10 dataset respectively, which means we can recover 79%, 84%, 90% and 94% relative performance using only 2%, 4%, 10% and 20% training data compared to whole dataset training. The performances will be further improved if BatchNorm is used, i.e. ConvNetBN.
 
