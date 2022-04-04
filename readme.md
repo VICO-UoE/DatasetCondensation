@@ -171,9 +171,19 @@ install packages in the requirements.
 ###  Basic experiments
 ```
 python main_DM.py  --dataset CIFAR10  --model ConvNet  --ipc 10  --dsa_strategy color_crop_cutout_flip_scale_rotate  --init real  --lr_img 1  --num_exp 5  --num_eval 5 
-# Empirically, --lr_img 1 for --ipc = 1/10/50, --lr_img 10 for --ipc = 100/200/500/1000. The best learning rate is validated on CIFAR10 roughly and may vary on different datasets and settings.
+# Empirically, for CIFAR10 dataset we set --lr_img 1 for --ipc = 1/10/50, --lr_img 10 for --ipc = 100/200/500/1000/1250. For CIFAR100 dataset, we set --lr_img 1 for --ipc = 1/10/50/100/125.
 ```
-DM achieves 67.0 ± 0.3%, 71.2 ± 0.4%, 76.1±0.3% and 79.8±0.3% testing accuracies with ConvNets when learning 100, 200, 500 and 1000 images/class synthetic sets on CIFAR10 dataset respectively, which means we can recover 79%, 84%, 90% and 94% relative performance using only 2%, 4%, 10% and 20% training data compared to whole dataset training. The performances will be further improved if BatchNorm is used, i.e. ConvNetBN.
+DM achieves 67.0 ± 0.3%, 71.2 ± 0.4%, 76.1±0.3%, 79.8±0.3% and 80.8±0.3% testing accuracies with ConvNets when learning 100, 200, 500, 1000 and 1250 images/class synthetic sets on CIFAR10 dataset respectively, which means we can recover 79%, 84%, 90%, 94% and 95% relative performance using only 2%, 4%, 10%, 20% and 25% training data compared to whole dataset training. The performances will be further improved if BatchNorm is used, i.e. ConvNetBN.
+
+<!--
+### Large-set Learning Performance
+|          | 1 | 10 | 50 | 100 | 200 | 500 | 1000 | 1250 |
+ :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-:
+| CIFAR10  |   |   |    | 67.0 ± 0.3 |  |
+| CIFAR100 |  |  |  |  |  |
+
+Table 3: Testing accuracies (%) of ConvNets trained from scratch on 1, 10, 50, ... synthetic image(s)/class. 
+-->
 
 ###  Continual learning experiments
 We do 5 experiments with 5 seeds to generate the class order for both 5 and 10 step learning:
