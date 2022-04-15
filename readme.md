@@ -208,7 +208,7 @@ python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 10 --method DM
 
 ### Citation
 ```
-@article{zhao2021dataset,
+@article{zhao2021DM,
   title={Dataset Condensation with Distribution Matching},
   author={Zhao, Bo and Bilen, Hakan},
   journal={arXiv preprint arXiv:2110.04181},
