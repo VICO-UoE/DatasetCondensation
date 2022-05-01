@@ -167,7 +167,7 @@ real and synthetic data in these sampled embedding spaces. </center><br>
 
 ### Setup
 install packages in the requirements. <br>
-TinyImageNet dataset [download](https://drive.google.com/file/d/13xbXPCi1LAXuZRNIy6ArkJp79qpwQiIi/view?usp=sharing).
+TinyImageNet dataset [download](https://drive.google.com/file/d/13xbXPCi1LAXuZRNIy6ArkJp79qpwQiIi/view?usp=sharing). Put it into _data_path_. 
 
 ###  Basic experiments
 ```
