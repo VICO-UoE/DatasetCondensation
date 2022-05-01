@@ -1,4 +1,5 @@
 import time
+import os
 import numpy as np
 import torch
 import torch.nn as nn
@@ -64,6 +65,32 @@ def get_dataset(dataset, data_path):
         dst_train = datasets.CIFAR100(data_path, train=True, download=True, transform=transform) # no augmentation
         dst_test = datasets.CIFAR100(data_path, train=False, download=True, transform=transform)
         class_names = dst_train.classes
+
+    elif dataset == 'TinyImageNet':
+        channel = 3
+        im_size = (64, 64)
+        num_classes = 200
+        mean = [0.485, 0.456, 0.406]
+        std = [0.229, 0.224, 0.225]
+        data = torch.load(os.path.join(data_path, 'tinyimagenet.pt'), map_location='cpu')
+
+        class_names = data['classes']
+
+        images_train = data['images_train']
+        labels_train = data['labels_train']
+        images_train = images_train.detach().float() / 255.0
+        labels_train = labels_train.detach()
+        for c in range(channel):
+            images_train[:,c] = (images_train[:,c] - mean[c])/std[c]
+        dst_train = TensorDataset(images_train, labels_train)  # no augmentation
+
+        images_val = data['images_val']
+        labels_val = data['labels_val']
+        images_val = images_val.detach().float() / 255.0
+        labels_val = labels_val.detach()
+        for c in range(channel):
+            images_val[:, c] = (images_val[:, c] - mean[c]) / std[c]
+        dst_test = TensorDataset(images_val, labels_val)  # no augmentation
 
     else:
         exit('unknown dataset: %s'%dataset)
