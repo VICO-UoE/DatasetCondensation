@@ -1,8 +1,18 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 # Acknowledgement to
 # https://github.com/kuangliu/pytorch-cifar,
 # https://github.com/BIGBALLON/CIFAR-ZOO,
+
+
+''' Swish activation '''
+class Swish(nn.Module): # Swish(x) = x∗σ(x)
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, input):
+        return input * torch.sigmoid(input)
 
 
 ''' MLP '''
@@ -49,6 +59,8 @@ class ConvNet(nn.Module):
             return nn.ReLU(inplace=True)
         elif net_act == 'leakyrelu':
             return nn.LeakyReLU(negative_slope=0.01)
+        elif net_act == 'swish':
+            return Swish()
         else:
             exit('unknown activation function: %s'%net_act)
 
@@ -152,6 +164,48 @@ class AlexNet(nn.Module):
         x = self.fc(x)
         return x
 
+    def embed(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        return x
+
+
+''' AlexNetBN '''
+class AlexNetBN(nn.Module):
+    def __init__(self, channel, num_classes):
+        super(AlexNetBN, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(channel, 128, kernel_size=5, stride=1, padding=4 if channel==1 else 2),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(128, 192, kernel_size=5, padding=2),
+            nn.BatchNorm2d(192),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(192, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 192, kernel_size=3, padding=1),
+            nn.BatchNorm2d(192),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(192, 192, kernel_size=3, padding=1),
+            nn.BatchNorm2d(192),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
+        self.fc = nn.Linear(192 * 4 * 4, num_classes)
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+        return x
+
+    def embed(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        return x
 
 
 ''' VGG '''
@@ -172,6 +226,11 @@ class VGG(nn.Module):
         x = self.features(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
+        return x
+
+    def embed(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
         return x
 
     def _make_layers(self, cfg, norm):
@@ -300,6 +359,15 @@ class ResNet_AP(nn.Module):
         out = self.classifier(out)
         return out
 
+    def embed(self, x):
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.layer1(out)
+        out = self.layer2(out)
+        out = self.layer3(out)
+        out = self.layer4(out)
+        out = F.avg_pool2d(out, kernel_size=1, stride=1) # modification
+        out = out.view(out.size(0), -1)
+        return out
 
 def ResNet18BN_AP(channel, num_classes):
     return ResNet_AP(BasicBlock_AP, [2,2,2,2], channel=channel, num_classes=num_classes, norm='batchnorm')
@@ -396,6 +464,16 @@ class ResNet(nn.Module):
         out = F.avg_pool2d(out, 4)
         out = out.view(out.size(0), -1)
         out = self.classifier(out)
+        return out
+
+    def embed(self, x):
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.layer1(out)
+        out = self.layer2(out)
+        out = self.layer3(out)
+        out = self.layer4(out)
+        out = F.avg_pool2d(out, 4)
+        out = out.view(out.size(0), -1)
         return out
 
 

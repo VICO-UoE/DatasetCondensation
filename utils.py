@@ -7,8 +7,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 from torchvision import datasets, transforms
 from scipy.ndimage.interpolation import rotate as scipyrotate
-from networks import MLP, ConvNet, LeNet, AlexNet, VGG11BN, VGG11, ResNet18, ResNet18BN_AP
-
+from networks import MLP, ConvNet, LeNet, AlexNet, AlexNetBN, VGG11, VGG11BN, ResNet18, ResNet18BN_AP, ResNet18BN
 
 def get_dataset(dataset, data_path):
     if dataset == 'MNIST':
@@ -88,12 +87,15 @@ def get_dataset(dataset, data_path):
         labels_val = data['labels_val']
         images_val = images_val.detach().float() / 255.0
         labels_val = labels_val.detach()
+
         for c in range(channel):
             images_val[:, c] = (images_val[:, c] - mean[c]) / std[c]
+
         dst_test = TensorDataset(images_val, labels_val)  # no augmentation
 
     else:
         exit('unknown dataset: %s'%dataset)
+
 
     testloader = torch.utils.data.DataLoader(dst_test, batch_size=256, shuffle=False, num_workers=0)
     return channel, im_size, num_classes, class_names, mean, std, dst_train, dst_test, testloader
@@ -131,6 +133,8 @@ def get_network(model, channel, num_classes, im_size=(32, 32)):
         net = LeNet(channel=channel, num_classes=num_classes)
     elif model == 'AlexNet':
         net = AlexNet(channel=channel, num_classes=num_classes)
+    elif model == 'AlexNetBN':
+        net = AlexNetBN(channel=channel, num_classes=num_classes)
     elif model == 'VGG11':
         net = VGG11( channel=channel, num_classes=num_classes)
     elif model == 'VGG11BN':
@@ -139,6 +143,8 @@ def get_network(model, channel, num_classes, im_size=(32, 32)):
         net = ResNet18(channel=channel, num_classes=num_classes)
     elif model == 'ResNet18BN_AP':
         net = ResNet18BN_AP(channel=channel, num_classes=num_classes)
+    elif model == 'ResNet18BN':
+        net = ResNet18BN(channel=channel, num_classes=num_classes)
 
     elif model == 'ConvNetD1':
         net = ConvNet(channel=channel, num_classes=num_classes, net_width=net_width, net_depth=1, net_act=net_act, net_norm=net_norm, net_pooling=net_pooling, im_size=im_size)
@@ -164,6 +170,10 @@ def get_network(model, channel, num_classes, im_size=(32, 32)):
         net = ConvNet(channel=channel, num_classes=num_classes, net_width=net_width, net_depth=net_depth, net_act='relu', net_norm=net_norm, net_pooling=net_pooling, im_size=im_size)
     elif model == 'ConvNetAL':
         net = ConvNet(channel=channel, num_classes=num_classes, net_width=net_width, net_depth=net_depth, net_act='leakyrelu', net_norm=net_norm, net_pooling=net_pooling, im_size=im_size)
+    elif model == 'ConvNetASwish':
+        net = ConvNet(channel=channel, num_classes=num_classes, net_width=net_width, net_depth=net_depth, net_act='swish', net_norm=net_norm, net_pooling=net_pooling, im_size=im_size)
+    elif model == 'ConvNetASwishBN':
+        net = ConvNet(channel=channel, num_classes=num_classes, net_width=net_width, net_depth=net_depth, net_act='swish', net_norm='batchnorm', net_pooling=net_pooling, im_size=im_size)
 
     elif model == 'ConvNetNN':
         net = ConvNet(channel=channel, num_classes=num_classes, net_width=net_width, net_depth=net_depth, net_act=net_act, net_norm='none', net_pooling=net_pooling, im_size=im_size)
@@ -438,12 +448,14 @@ def get_daparam(dataset, model, model_eval, ipc):
 def get_eval_pool(eval_mode, model, model_eval):
     if eval_mode == 'M': # multiple architectures
         model_eval_pool = ['MLP', 'ConvNet', 'LeNet', 'AlexNet', 'VGG11', 'ResNet18']
+    elif eval_mode == 'B':  # multiple architectures with BatchNorm for DM experiments
+        model_eval_pool = ['ConvNetBN', 'ConvNetASwishBN', 'AlexNetBN', 'VGG11BN', 'ResNet18BN']
     elif eval_mode == 'W': # ablation study on network width
         model_eval_pool = ['ConvNetW32', 'ConvNetW64', 'ConvNetW128', 'ConvNetW256']
     elif eval_mode == 'D': # ablation study on network depth
         model_eval_pool = ['ConvNetD1', 'ConvNetD2', 'ConvNetD3', 'ConvNetD4']
     elif eval_mode == 'A': # ablation study on network activation function
-        model_eval_pool = ['ConvNetAS', 'ConvNetAR', 'ConvNetAL']
+        model_eval_pool = ['ConvNetAS', 'ConvNetAR', 'ConvNetAL', 'ConvNetASwish']
     elif eval_mode == 'P': # ablation study on network pooling layer
         model_eval_pool = ['ConvNetNP', 'ConvNetMP', 'ConvNetAP']
     elif eval_mode == 'N': # ablation study on network normalization layer
