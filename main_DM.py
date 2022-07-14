@@ -12,11 +12,10 @@ from utils import get_loops, get_dataset, get_network, get_eval_pool, evaluate_s
 def main():
 
     parser = argparse.ArgumentParser(description='Parameter Processing')
-    parser.add_argument('--method', type=str, default='DM', help='DC/DSA/DM')
     parser.add_argument('--dataset', type=str, default='CIFAR10', help='dataset')
     parser.add_argument('--model', type=str, default='ConvNet', help='model')
     parser.add_argument('--ipc', type=int, default=50, help='image(s) per class')
-    parser.add_argument('--eval_mode', type=str, default='S', help='eval_mode') # S: the same to training model, M: multi architectures,  W: net width, D: net depth, A: activation function, P: pooling layer, N: normalization layer,
+    parser.add_argument('--eval_mode', type=str, default='SS', help='eval_mode') # S: the same to training model, M: multi architectures,  W: net width, D: net depth, A: activation function, P: pooling layer, N: normalization layer,
     parser.add_argument('--num_exp', type=int, default=5, help='the number of experiments')
     parser.add_argument('--num_eval', type=int, default=20, help='the number of evaluating randomly initialized models')
     parser.add_argument('--epoch_eval_train', type=int, default=1000, help='epochs to train a model with synthetic data') # it can be small for speeding up with little performance drop
@@ -32,6 +31,7 @@ def main():
     parser.add_argument('--dis_metric', type=str, default='ours', help='distance metric')
 
     args = parser.parse_args()
+    args.method = 'DM'
     args.outer_loop, args.inner_loop = get_loops(args.ipc)
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
     args.dsa_param = ParamDiffAug()
@@ -197,7 +197,7 @@ def main():
             loss_avg /= (num_classes)
 
             if it%10 == 0:
-                print('%s iter = %04d, loss = %.4f' % (get_time(), it, loss_avg))
+                print('%s iter = %05d, loss = %.4f' % (get_time(), it, loss_avg))
 
             if it == args.Iteration: # only record the final results
                 data_save.append([copy.deepcopy(image_syn.detach().cpu()), copy.deepcopy(label_syn.detach().cpu())])
