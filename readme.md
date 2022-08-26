@@ -229,6 +229,16 @@ python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 10 --method DM
 }
 ```
 
+## Synthesizing Informative Training Samples with GAN [[PDF]](https://arxiv.org/pdf/2204.07513.pdf)
+We propose to learn the latent vectors of generators that produces informative training images. Then, we store the generator and learned latent vectors instead of synthetic images, which needs less storage. The code and data have been released in [VICO-UoE/IT-GAN](https://github.com/VICO-UoE/IT-GAN).
 
-
+### Citation
+```
+@article{zhao2022synthesizing,
+  title={Synthesizing Informative Training Samples with GAN},
+  author={Zhao, Bo and Bilen, Hakan},
+  journal={arXiv preprint arXiv:2204.07513},
+  year={2022}
+}
+```
 
