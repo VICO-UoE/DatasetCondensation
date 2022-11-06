@@ -228,8 +228,8 @@ python CL_DM.py  --dataset CIFAR100  --model ConvNet  --steps 10 --method DM
 @article{zhao2021DM,
   title={Dataset Condensation with Distribution Matching},
   author={Zhao, Bo and Bilen, Hakan},
-  journal={arXiv preprint arXiv:2110.04181},
-  year={2021}
+  booktitle={Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision},
+  year={2023}
 }
 ```
 
