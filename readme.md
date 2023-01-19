@@ -155,7 +155,6 @@ year={2021}
 
 
 ## Dataset Condensation with Distribution Matching [[PDF]](https://arxiv.org/pdf/2110.04181.pdf)
-___Preliminary code for DM method. It should work. We will polish it soon.___
 ### Method
 <p align="center"><img src='docs/method_DM.png' width=500></p>
 <center>Figure 7: Dataset Condensation with Distribution Matching. We
