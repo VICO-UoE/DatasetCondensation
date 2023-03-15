@@ -1,0 +1,1 @@
+python main_DM_text.py  --dataset dummy  --model LSTMNet  --ipc 10  --init real  --lr_img 1  --num_exp 5  --num_eval 5

@@ -30,7 +30,31 @@ class MLP(nn.Module):
         out = self.fc_3(out)
         return out
 
+class LSTMNet(nn.Module):
+    def __init__(self, embed_dim, hidden_dim, num_classes):
+        super(LSTMNet, self).__init__()
+        self.hidden_size = hidden_dim
+        self.input_size = embed_dim
 
+        self.lstm = nn.LSTM(input_size = embed_dim, hidden_size = hidden_dim, batch_first = True)
+        self.mlp = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LeakyReLU(0.2),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LeakyReLU(0.2),
+        )
+        self.classifier = nn.Linear(hidden_dim, num_classes)
+
+    def forward(self, x):
+        _, (h_n, _) = self.lstm(x)
+        out = self.mlp(h_n[0])
+        out = self.classifier(out)
+        return out
+
+    def embed(self, x):
+        _, (h_n, _) = self.lstm(x)
+        out = self.mlp(h_n[0])
+        return out
 
 ''' ConvNet '''
 class ConvNet(nn.Module):
