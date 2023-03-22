@@ -20,12 +20,12 @@ def main():
     parser.add_argument('--num_exp', type=int, default=5, help='the number of experiments')
     parser.add_argument('--num_eval', type=int, default=20, help='the number of evaluating randomly initialized models')
     parser.add_argument('--epoch_eval_train', type=int, default=1000, help='epochs to train a model with synthetic data') # it can be small for speeding up with little performance drop
-    parser.add_argument('--Iteration', type=int, default=20000, help='training iterations')
+    parser.add_argument('--Iteration', type=int, default=10000, help='training iterations')
     parser.add_argument('--lr_img', type=float, default=1.0, help='learning rate for updating synthetic images')
     parser.add_argument('--lr_net', type=float, default=0.01, help='learning rate for updating network parameters')
     parser.add_argument('--batch_real', type=int, default=256, help='batch size for real data')
     parser.add_argument('--batch_train', type=int, default=256, help='batch size for training networks')
-    parser.add_argument('--init', type=str, default='syn', help='noise/real: initialize synthetic images from random noise or randomly sampled real images.')
+    parser.add_argument('--init', type=str, default='real', help='noise/real: initialize synthetic images from random noise or randomly sampled real images.')
     parser.add_argument('--dsa_strategy', type=str, default='none', help='differentiable Siamese augmentation strategy')
     parser.add_argument('--data_path', type=str, default='data', help='dataset path')
     parser.add_argument('--save_path', type=str, default='result', help='path to save results')
@@ -33,7 +33,6 @@ def main():
 
     args = parser.parse_args()
     args.method = 'DM'
-    args.outer_loop, args.inner_loop = get_loops(args.ipc)
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
     args.dsa_param = ParamDiffAug()
     args.dsa = False if ('dsa_strategy' not in args or args.dsa_strategy in ['none', 'None']) else True

@@ -1,1 +1,1 @@
-python main_DM_text.py  --dataset dummy  --model LSTMNet  --ipc 10  --init real  --lr_img 1  --num_exp 5  --num_eval 5
+python main_DM_text.py  --dataset SST2  --model LSTMNet  --ipc 25  --init real  --lr_img 1  --num_exp 5  --num_eval 5 --save_path result/SST2

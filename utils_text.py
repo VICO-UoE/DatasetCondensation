@@ -18,7 +18,6 @@ def set_seed(seed):
   torch.manual_seed(seed)
 
 def get_dataset(dataset, data_path):
-    print(dataset)
     if dataset == 'dummy':
         embedding_size = 728
         max_sentence_len = 25
@@ -35,7 +34,7 @@ def get_dataset(dataset, data_path):
         dst_train = TensorDataset(train_data, train_labels)
         dst_test = TensorDataset(test_data, test_labels)
     
-    elif dataset == "gaurav":
+    elif dataset == "SST2":
         train_df = pd.read_csv('https://github.com/clairett/pytorch-sentiment-classification/raw/master/data/SST2/train.tsv', delimiter='\t', header=None)
         eval_df = pd.read_csv('https://github.com/clairett/pytorch-sentiment-classification/raw/master/data/SST2/test.tsv', delimiter='\t', header=None)
 
@@ -63,17 +62,23 @@ def get_dataset(dataset, data_path):
 
         orig_model = SentenceTransformer(st_model)
 
-        X_train_noFT = torch.tensor(orig_model.encode(x_train))
-        X_eval_noFT = orig_model.encode(x_eval)
+        X_train_noFT = orig_model.encode(x_train, output_value='token_embeddings')
+        X_eval_noFT = orig_model.encode(x_eval, output_value='token_embeddings')
         
+        print(len(X_train_noFT))
+        print(len(X_eval_noFT))
+        
+        x_train_tensor = nn.utils.rnn.pad_sequence(X_train_noFT, batch_first=True)[:, :max_sentence_len, :]
+        x_eval_tensor = nn.utils.rnn.pad_sequence(X_eval_noFT, batch_first=True)[:, :max_sentence_len, :]
+        # print(x_train_tensor.shape)
         # trainset = TensorDataset(torch.Tensor(X_eval_noFT),torch.Tensor(y_eval)) 
         # valloader = torch.utils.data.DataLoader(valset, batch_size=16, num_workers=2)
         
         # valset = TensorDataset(torch.Tensor(X_eval_noFT),torch.Tensor(y_eval)) 
         # valloader = torch.utils.data.DataLoader(valset, batch_size=16, num_workers=2)
 
-        dst_train = TensorDataset(torch.Tensor(X_train_noFT),torch.Tensor(y_train).long()) 
-        dst_test = TensorDataset(torch.Tensor(X_eval_noFT),torch.Tensor(y_eval).long()) 
+        dst_train = TensorDataset(torch.Tensor(x_train_tensor),torch.Tensor(y_train).long()) 
+        dst_test = TensorDataset(torch.Tensor(x_eval_tensor),torch.Tensor(y_eval).long()) 
 
     else:
         exit('unknown dataset: %s'%dataset)
@@ -82,6 +87,8 @@ def get_dataset(dataset, data_path):
     testloader = torch.utils.data.DataLoader(dst_test, batch_size=16, shuffle=True,drop_last=True)
     return embedding_size, max_sentence_len, num_classes, class_names, dst_train, dst_test, testloader
 
+# if __name__ == '__main__':
+#     embedding_size, max_sentence_len, num_classes, class_names, dst_train, dst_test, testloader = get_dataset('SST2', "")
 
 
 class TensorDataset(Dataset):
@@ -222,14 +229,11 @@ def epoch(mode, dataloader, net, optimizer, criterion, args):
         net.eval()
 
     for i_batch, datum in enumerate(dataloader):
-        if i_batch>100:
-          break
         train_data = datum[0].float().to(args.device)
         lab = datum[1].long().to(args.device)
         n_b = lab.shape[0]
 
         output = net(train_data)
-        print("From utils_text output shp: "+str(output.shape)+"Lab shp:"+str(lab.shape))
         loss = criterion(output, lab)
         acc = np.sum(np.equal(np.argmax(output.cpu().data.numpy(), axis=-1), lab.cpu().data.numpy()))
 
