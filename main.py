@@ -7,7 +7,8 @@ import torch
 import torch.nn as nn
 from torchvision.utils import save_image
 from utils import get_loops, get_dataset, get_network, get_eval_pool, evaluate_synset, get_daparam, match_loss, get_time, TensorDataset, epoch, DiffAugment, ParamDiffAug
-
+import wandb
+from tqdm import tqdm
 
 def main():
 
@@ -45,9 +46,12 @@ def main():
 
     eval_it_pool = np.arange(0, args.Iteration+1, 500).tolist() if args.eval_mode == 'S' or args.eval_mode == 'SS' else [args.Iteration] # The list of iterations when we evaluate models and record results.
     print('eval_it_pool: ', eval_it_pool)
-    channel, im_size, num_classes, class_names, mean, std, dst_train, dst_test, testloader = get_dataset(args.dataset, args.data_path)
+    channel, im_size, num_classes, class_names, mean, std, dst_train, dst_test, testloader = get_dataset(args.dataset, args.data_path, batch_size=args.batch_real)
     model_eval_pool = get_eval_pool(args.eval_mode, args.model, args.model)
 
+    wandb.init(project="dds", name=args.method + '_' + args.dataset + '_' + args.model + '_' + str(
+        args.ipc) + '_' + args.eval_mode + '_' + args.dsa_strategy + '_' + args.dis_metric)
+    wandb.config.update(args.__dict__)
 
     accs_all_exps = dict() # record performances of all experiments
     for key in model_eval_pool:
@@ -65,20 +69,20 @@ def main():
         images_all = []
         labels_all = []
         indices_class = [[] for c in range(num_classes)]
-
-        images_all = [torch.unsqueeze(dst_train[i][0], dim=0) for i in range(len(dst_train))]
-        labels_all = [dst_train[i][1] for i in range(len(dst_train))]
+        for i in tqdm(range(len(dst_train))):
+            example = dst_train[i]
+            images_all.append(torch.unsqueeze(example[0], dim=0))
+            labels_all.append(example[1])
         for i, lab in enumerate(labels_all):
             indices_class[lab].append(i)
-        images_all = torch.cat(images_all, dim=0).to(args.device)
-        labels_all = torch.tensor(labels_all, dtype=torch.long, device=args.device)
+        images_all = torch.cat(images_all, dim=0)
 
         for c in range(num_classes):
             print('class c = %d: %d real images'%(c, len(indices_class[c])))
 
         def get_images(c, n): # get random n images from class c
             idx_shuffle = np.random.permutation(indices_class[c])[:n]
-            return images_all[idx_shuffle]
+            return images_all[idx_shuffle].to(args.device)
 
         for ch in range(channel):
             print('real images channel %d, mean = %.4f, std = %.4f'%(ch, torch.mean(images_all[:, ch]), torch.std(images_all[:, ch])))
@@ -130,6 +134,8 @@ def main():
                         accs.append(acc_test)
                     print('Evaluate %d random %s, mean = %.4f std = %.4f\n-------------------------'%(len(accs), model_eval, np.mean(accs), np.std(accs)))
 
+                    wandb.log({'mean_acc_eval': np.mean(accs), 'std_acc_eval': np.std(accs), 'model_eval': model_eval})
+
                     if it == args.Iteration: # record the final results
                         accs_all_exps[model_eval] += accs
 
@@ -141,6 +147,8 @@ def main():
                 image_syn_vis[image_syn_vis<0] = 0.0
                 image_syn_vis[image_syn_vis>1] = 1.0
                 save_image(image_syn_vis, save_name, nrow=args.ipc) # Trying normalize = True/False may get better visual effects.
+
+                wandb.log({"synthetic images": [wandb.Image(save_name)]})
 
 
             ''' Train synthetic data '''
@@ -202,6 +210,7 @@ def main():
                 loss.backward()
                 optimizer_img.step()
                 loss_avg += loss.item()
+                wandb.log({"loss": loss.item()})
 
                 if ol == args.outer_loop - 1:
                     break
@@ -219,10 +228,21 @@ def main():
 
             if it%10 == 0:
                 print('%s iter = %04d, loss = %.4f' % (get_time(), it, loss_avg))
-
+            wandb.log({"loss_avg": loss_avg})
             if it == args.Iteration: # only record the final results
                 data_save.append([copy.deepcopy(image_syn.detach().cpu()), copy.deepcopy(label_syn.detach().cpu())])
                 torch.save({'data': data_save, 'accs_all_exps': accs_all_exps, }, os.path.join(args.save_path, 'res_%s_%s_%s_%dipc.pt'%(args.method, args.dataset, args.model, args.ipc)))
+
+                # log synthetic images to wandb, where image_syn is ipc images of each class
+                image_syn_vis = copy.deepcopy(image_syn.detach().cpu())
+                for ch in range(channel):
+                    image_syn_vis[:, ch] = image_syn_vis[:, ch] * std[ch] + mean[ch]
+                image_syn_vis[image_syn_vis < 0] = 0.0
+                image_syn_vis[image_syn_vis > 1] = 1.0
+                save_image(image_syn_vis, os.path.join(args.save_path, 'syn_%s_%s_%s_%dipc.png' % (
+                args.method, args.dataset, args.model, args.ipc)),
+                           nrow=args.ipc)  # Trying normalize = True/False may get better visual effects.
+                wandb.log({"synthetic images": [wandb.Image(image_syn_vis[i]) for i in range(args.ipc * num_classes)]})
 
 
     print('\n==================== Final Results ====================\n')
