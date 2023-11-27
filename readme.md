@@ -245,3 +245,9 @@ We propose to learn the latent vectors of generators that produces informative t
 }
 ```
 
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=VICO-UoE/DatasetCondensation&type=Date)](https://star-history.com/#VICO-UoE/DatasetCondensation&Date)
+
+
